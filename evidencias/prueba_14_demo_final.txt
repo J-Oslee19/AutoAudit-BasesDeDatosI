@@ -1,0 +1,110 @@
+CREATE TABLE
+DO
+GRANT ROLE
+GRANT ROLE
+GRANT
+GRANT
+SET
+1. Tablas disponibles en el diccionario de datos:
+ nombre_tabla | num_columnas | auditada | registrada 
+--------------+--------------+----------+------------
+ cliente      |            5 | f        | f
+
+   Columnas de cliente:
+ orden | nombre_columna |       tipo_dato        | es_pk 
+-------+----------------+------------------------+-------
+     1 | id_cliente     | integer                | t
+     2 | nombre         | character varying(100) | f
+     3 | limite_credito | numeric(10,2)          | f
+     4 | telefono       | character varying(15)  | f
+     5 | categoria      | character varying(10)  | f
+
+2. Configurar: limite_credito y categoria en todo; nombre solo al insertar y borrar
+BEGIN
+ fn_configurar_auditoria 
+-------------------------
+                       6
+
+ fn_configurar_auditoria 
+-------------------------
+                       2
+
+  tabla  |  accion  |                    detalle                     
+---------+----------+------------------------------------------------
+ cliente | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id_cliente"]
+
+COMMIT
+RESET
+3. Operaciones de negocio
+SET
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+UPDATE 1
+RESET
+SET
+UPDATE 1
+UPDATE 1
+DELETE 1
+RESET
+SET
+4a. ¿Qué cambió el supervisor?
+         fecha_hora         | nombre_tabla | nombre_columna | tipo_evento |    id_registro    |  valor_anterior   | valor_nuevo 
+----------------------------+--------------+----------------+-------------+-------------------+-------------------+-------------
+ 2026-11-06 16:40:38.639808 | cliente      | categoria      | UPDATE      | {"id_cliente": 1} | B                 | A
+ 2026-11-06 16:40:38.639939 | cliente      | limite_credito | UPDATE      | {"id_cliente": 1} | 5000.00           | 7500.00
+ 2026-11-06 16:40:38.642679 | cliente      | limite_credito | UPDATE      | {"id_cliente": 2} | 2000.00           | 1500.00
+ 2026-11-06 16:40:38.645364 | cliente      | categoria      | DELETE      | {"id_cliente": 3} | A                 | 
+ 2026-11-06 16:40:38.645498 | cliente      | limite_credito | DELETE      | {"id_cliente": 3} | 10000.00          | 
+ 2026-11-06 16:40:38.645582 | cliente      | nombre         | DELETE      | {"id_cliente": 3} | Distribuidora Sur | 
+
+4b. ¿Cómo cambió el límite de crédito?
+         fecha_hora         | tipo_evento |    id_registro    | valor_anterior | valor_nuevo | nombre_usuario  
+----------------------------+-------------+-------------------+----------------+-------------+-----------------
+ 2026-11-06 16:40:38.626312 | INSERT      | {"id_cliente": 1} |                | 5000.00     | demo_cajero
+ 2026-11-06 16:40:38.629975 | INSERT      | {"id_cliente": 2} |                | 2000.00     | demo_cajero
+ 2026-11-06 16:40:38.633474 | INSERT      | {"id_cliente": 3} |                | 10000.00    | demo_cajero
+ 2026-11-06 16:40:38.639939 | UPDATE      | {"id_cliente": 1} | 5000.00        | 7500.00     | demo_supervisor
+ 2026-11-06 16:40:38.642679 | UPDATE      | {"id_cliente": 2} | 2000.00        | 1500.00     | demo_supervisor
+ 2026-11-06 16:40:38.645498 | DELETE      | {"id_cliente": 3} | 10000.00       |             | demo_supervisor
+
+4c. Historia completa del cliente 3 (ya eliminado)
+         fecha_hora         | nombre_columna | tipo_evento |  valor_anterior   |    valor_nuevo    | nombre_usuario  
+----------------------------+----------------+-------------+-------------------+-------------------+-----------------
+ 2026-11-06 16:40:38.633346 | categoria      | INSERT      |                   | A                 | demo_cajero
+ 2026-11-06 16:40:38.633474 | limite_credito | INSERT      |                   | 10000.00          | demo_cajero
+ 2026-11-06 16:40:38.633596 | nombre         | INSERT      |                   | Distribuidora Sur | demo_cajero
+ 2026-11-06 16:40:38.645364 | categoria      | DELETE      | A                 |                   | demo_supervisor
+ 2026-11-06 16:40:38.645498 | limite_credito | DELETE      | 10000.00          |                   | demo_supervisor
+ 2026-11-06 16:40:38.645582 | nombre         | DELETE      | Distribuidora Sur |                   | demo_supervisor
+
+4d. Últimos 5 cambios
+         fecha_hora         | nombre_columna | tipo_evento |  valor_anterior   | valor_nuevo | nombre_usuario  
+----------------------------+----------------+-------------+-------------------+-------------+-----------------
+ 2026-11-06 16:40:38.639939 | limite_credito | UPDATE      | 5000.00           | 7500.00     | demo_supervisor
+ 2026-11-06 16:40:38.642679 | limite_credito | UPDATE      | 2000.00           | 1500.00     | demo_supervisor
+ 2026-11-06 16:40:38.645364 | categoria      | DELETE      | A                 |             | demo_supervisor
+ 2026-11-06 16:40:38.645498 | limite_credito | DELETE      | 10000.00          |             | demo_supervisor
+ 2026-11-06 16:40:38.645582 | nombre         | DELETE      | Distribuidora Sur |             | demo_supervisor
+
+5. Reportes
+ nombre_usuario  | total_cambios | inserciones | actualizaciones | eliminaciones | tablas_afectadas |       primer_cambio        |       ultimo_cambio        
+-----------------+---------------+-------------+-----------------+---------------+------------------+----------------------------+----------------------------
+ demo_cajero     |             9 |           9 |               0 |             0 |                1 | 2026-11-06 16:40:38.625342 | 2026-11-06 16:40:38.633596
+ demo_supervisor |             6 |           0 |               3 |             3 |                1 | 2026-11-06 16:40:38.639808 | 2026-11-06 16:40:38.645582
+
+ nombre_tabla | nombre_columna | total_cambios | inserciones | actualizaciones | eliminaciones | usuarios_distintos |       ultimo_cambio        | ultimo_usuario  
+--------------+----------------+---------------+-------------+-----------------+---------------+--------------------+----------------------------+-----------------
+ cliente      | categoria      |             5 |           3 |               1 |             1 |                  2 | 2026-11-06 16:40:38.645364 | demo_supervisor
+ cliente      | limite_credito |             6 |           3 |               2 |             1 |                  2 | 2026-11-06 16:40:38.645498 | demo_supervisor
+ cliente      | nombre         |             4 |           3 |               0 |             1 |                  2 | 2026-11-06 16:40:38.645582 | demo_supervisor
+
+   fecha    | inserciones | actualizaciones | eliminaciones | total_cambios | usuarios_distintos | tablas_distintas 
+------------+-------------+-----------------+---------------+---------------+--------------------+------------------
+ 2026-11-06 |           9 |               3 |             3 |            15 |                  2 |                1
+
+ nombre_tabla | tabla_habilitada | tabla_existe | columnas_activas |    eventos_activos     | trigger_instalado | registros_bitacora 
+--------------+------------------+--------------+------------------+------------------------+-------------------+--------------------
+ cliente      | t                | t            |                3 | DELETE, INSERT, UPDATE | t                 |                 15
+
+RESET

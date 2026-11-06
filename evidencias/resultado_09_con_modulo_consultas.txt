@@ -1,0 +1,575 @@
+-- Servidor:
+PostgreSQL 18.6 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit
+-- Re-ejecución del 09 con los módulos 10 y 11 instalados (2026-11-01 01:02)
+
+Timing is on.
+BEGIN
+Time: 0.217 ms
+SET
+Time: 0.149 ms
+SET
+Time: 1.507 ms
+SET
+Time: 0.198 ms
+DO
+Time: 3.629 ms
+CREATE FUNCTION
+Time: 0.878 ms
+CREATE TABLE
+Time: 2.557 ms
+CREATE ROLE
+Time: 0.223 ms
+CREATE ROLE
+Time: 0.144 ms
+GRANT ROLE
+Time: 0.267 ms
+GRANT
+Time: 0.254 ms
+GRANT
+Time: 0.188 ms
+psql:sql/09_pruebas_triggers.sql:50: NOTICE:  OK: Operador sin INSERT directo en bitacora, usuarios y estaciones
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.452 ms
+psql:sql/09_pruebas_triggers.sql:56: NOTICE:  OK: Registrador SECURITY DEFINER y guardia SECURITY INVOKER
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.980 ms
+SET
+Time: 0.089 ms
+ fn_configurar_auditoria 
+-------------------------
+                       6
+(1 row)
+
+Time: 9.705 ms
+      tabla      |  accion  |                detalle                 
+-----------------+----------+----------------------------------------
+ aa_prueba_datos | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id"]
+(1 row)
+
+Time: 10.331 ms
+      tabla      |  accion  |                detalle                 
+-----------------+----------+----------------------------------------
+ aa_prueba_datos | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id"]
+(1 row)
+
+Time: 5.229 ms
+RESET
+Time: 0.080 ms
+psql:sql/09_pruebas_triggers.sql:65: NOTICE:  OK: Generacion repetida: exactamente un trigger
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.274 ms
+SET
+Time: 0.068 ms
+INSERT 0 1
+Time: 4.103 ms
+RESET
+Time: 0.076 ms
+psql:sql/09_pruebas_triggers.sql:71: NOTICE:  OK: INSERT: solo las dos columnas seleccionadas
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.169 ms
+psql:sql/09_pruebas_triggers.sql:78: NOTICE:  OK: Los guardias permiten el alta automatica de usuario y estacion
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.185 ms
+psql:sql/09_pruebas_triggers.sql:88: NOTICE:  OK: Contexto real: usuario cliente, fecha, IP disponible o NULL y PK
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.802 ms
+UPDATE 1
+Time: 0.962 ms
+psql:sql/09_pruebas_triggers.sql:92: NOTICE:  OK: Columna no seleccionada y numeric sin cambio no producen historial
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.247 ms
+UPDATE 1
+Time: 1.234 ms
+psql:sql/09_pruebas_triggers.sql:97: NOTICE:  OK: UPDATE: anterior y nuevo
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.649 ms
+UPDATE 1
+Time: 0.965 ms
+UPDATE 1
+Time: 0.794 ms
+UPDATE 1
+Time: 1.015 ms
+psql:sql/09_pruebas_triggers.sql:104: NOTICE:  OK: NULL: solo cambios reales
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.506 ms
+psql:sql/09_pruebas_triggers.sql:108: NOTICE:  OK: NULL SQL distinto del texto null
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.528 ms
+ fn_cambiar_estado_evento 
+--------------------------
+ 
+(1 row)
+
+Time: 0.699 ms
+UPDATE 1
+Time: 0.426 ms
+psql:sql/09_pruebas_triggers.sql:113: NOTICE:  OK: Desactivar columna/evento tiene efecto inmediato
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.177 ms
+ fn_cambiar_estado_evento 
+--------------------------
+ 
+(1 row)
+
+Time: 0.459 ms
+      tabla      |  accion  |           detalle            
+-----------------+----------+------------------------------
+ aa_prueba_datos | GENERADO | DELETE OR INSERT; PK: ["id"]
+(1 row)
+
+Time: 2.607 ms
+psql:sql/09_pruebas_triggers.sql:118: NOTICE:  OK: Regeneracion retira UPDATE del trigger si no quedan columnas activas
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.273 ms
+UPDATE 1
+Time: 0.155 ms
+psql:sql/09_pruebas_triggers.sql:120: NOTICE:  OK: Operacion UPDATE desactivada
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.202 ms
+ fn_cambiar_estado_evento 
+--------------------------
+ 
+(1 row)
+
+Time: 1.449 ms
+      tabla      |  accion  |                detalle                 
+-----------------+----------+----------------------------------------
+ aa_prueba_datos | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id"]
+(1 row)
+
+Time: 2.551 ms
+UPDATE 1
+Time: 1.841 ms
+DELETE 1
+Time: 1.637 ms
+psql:sql/09_pruebas_triggers.sql:125: NOTICE:  OK: Reactivacion y DELETE
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.352 ms
+psql:sql/09_pruebas_triggers.sql:129: NOTICE:  OK: DELETE conserva valores anteriores
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.823 ms
+ fn_deshabilitar_tabla 
+-----------------------
+ 
+(1 row)
+
+Time: 0.840 ms
+      tabla      |  accion  |                  detalle                  
+-----------------+----------+-------------------------------------------
+ aa_prueba_datos | RETIRADO | Sin eventos activos; historial conservado
+(1 row)
+
+Time: 1.614 ms
+INSERT 0 1
+Time: 0.208 ms
+psql:sql/09_pruebas_triggers.sql:136: NOTICE:  OK: Deshabilitar tabla retira trigger y conserva todo el historial
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.270 ms
+GRANT
+Time: 0.200 ms
+SET
+Time: 0.059 ms
+psql:sql/09_pruebas_triggers.sql:168: NOTICE:  OK: INSERT directo bloqueado
+psql:sql/09_pruebas_triggers.sql:168: NOTICE:  OK: UPDATE directo bloqueado
+psql:sql/09_pruebas_triggers.sql:168: NOTICE:  OK: DELETE directo bloqueado
+psql:sql/09_pruebas_triggers.sql:168: NOTICE:  OK: TRUNCATE bloqueado
+psql:sql/09_pruebas_triggers.sql:168: NOTICE:  OK: generador restringido
+psql:sql/09_pruebas_triggers.sql:168: NOTICE:  OK: configuracion anterior sigue restringida
+DO
+Time: 1.067 ms
+RESET
+Time: 0.062 ms
+CREATE TABLE
+Time: 1.781 ms
+ fn_configurar_auditoria 
+-------------------------
+                       3
+(1 row)
+
+Time: 1.950 ms
+      tabla       |  accion  |                detalle                 
+------------------+----------+----------------------------------------
+ aa prueba; tabla | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id"]
+(1 row)
+
+Time: 4.070 ms
+INSERT 0 1
+Time: 2.107 ms
+psql:sql/09_pruebas_triggers.sql:178: NOTICE:  OK: SQL dinamico con identificadores especiales
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.623 ms
+CREATE TABLE
+Time: 1.286 ms
+ fn_configurar_auditoria 
+-------------------------
+                       3
+(1 row)
+
+Time: 1.546 ms
+        tabla        |  accion  |                  detalle                   
+---------------------+----------+--------------------------------------------
+ aa_prueba_compuesta | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["a", "b"]
+(1 row)
+
+Time: 4.236 ms
+INSERT 0 1
+Time: 2.207 ms
+UPDATE 1
+Time: 1.136 ms
+psql:sql/09_pruebas_triggers.sql:189: NOTICE:  OK: PK compuesta y cambio de PK
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.560 ms
+CREATE TABLE
+Time: 1.176 ms
+ fn_configurar_auditoria 
+-------------------------
+                       3
+(1 row)
+
+Time: 1.248 ms
+     tabla      |  accion  |                detalle                 
+----------------+----------+----------------------------------------
+ aa_prueba_json | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id"]
+(1 row)
+
+Time: 2.583 ms
+INSERT 0 1
+Time: 2.230 ms
+UPDATE 1
+Time: 2.306 ms
+psql:sql/09_pruebas_triggers.sql:199: NOTICE:  OK: Tipo json: SQL NULL distinto de JSON null
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.572 ms
+CREATE TABLE
+Time: 0.809 ms
+ fn_configurar_auditoria 
+-------------------------
+                       3
+(1 row)
+
+Time: 2.640 ms
+      tabla       |  accion  |                          detalle                          
+------------------+----------+-----------------------------------------------------------
+ aa_prueba_sin_pk | GENERADO | DELETE OR INSERT OR UPDATE; sin PK: id_registro sera NULL
+(1 row)
+
+Time: 4.448 ms
+INSERT 0 1
+Time: 2.329 ms
+psql:sql/09_pruebas_triggers.sql:207: NOTICE:  OK: Sin PK: no se inventa identificador
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.807 ms
+CREATE TABLE
+Time: 1.034 ms
+CREATE TABLE
+Time: 2.033 ms
+psql:sql/09_pruebas_triggers.sql:215: NOTICE:  OK: pg_partition_ancestors devuelve SETOF regclass en el servidor
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.475 ms
+psql:sql/09_pruebas_triggers.sql:220: NOTICE:  OK: Regresion: ancestro de particion con alias de columna explicito
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.242 ms
+ fn_configurar_auditoria 
+-------------------------
+                       3
+(1 row)
+
+Time: 1.599 ms
+        tabla        |  accion  |                detalle                 
+---------------------+----------+----------------------------------------
+ aa_prueba_particion | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id"]
+(1 row)
+
+Time: 2.421 ms
+GRANT
+Time: 0.294 ms
+SET
+Time: 0.142 ms
+INSERT 0 1
+Time: 2.879 ms
+INSERT 0 1
+Time: 1.308 ms
+UPDATE 1
+Time: 1.553 ms
+DELETE 1
+Time: 1.178 ms
+RESET
+Time: 0.080 ms
+psql:sql/09_pruebas_triggers.sql:235: NOTICE:  OK: Particiones: cuatro cambios automaticos, sin duplicados, con operador normal
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 1.049 ms
+psql:sql/09_pruebas_triggers.sql:244: NOTICE:  OK: Particiones: UPDATE y DELETE conservan los valores correctos
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 1.517 ms
+CREATE FUNCTION
+Time: 0.325 ms
+CREATE TRIGGER
+Time: 0.236 ms
+ fn_configurar_auditoria 
+-------------------------
+                       3
+(1 row)
+
+Time: 1.687 ms
+      tabla      |  accion  |                detalle                 
+-----------------+----------+----------------------------------------
+ aa_prueba_datos | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id"]
+(1 row)
+
+Time: 1.976 ms
+ fn_autoaudit_retirar 
+----------------------
+                    1
+(1 row)
+
+Time: 1.073 ms
+ fn_autoaudit_retirar 
+----------------------
+                    0
+(1 row)
+
+Time: 0.435 ms
+psql:sql/09_pruebas_triggers.sql:257: NOTICE:  OK: Retiro idempotente conserva triggers ajenos
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.194 ms
+CREATE TABLE
+Time: 1.505 ms
+CREATE TRIGGER
+Time: 0.303 ms
+ fn_configurar_auditoria 
+-------------------------
+                       3
+(1 row)
+
+Time: 1.510 ms
+psql:sql/09_pruebas_triggers.sql:269: NOTICE:  OK: colision ajena detectada
+DO
+Time: 1.904 ms
+ fn_deshabilitar_tabla 
+-----------------------
+ 
+(1 row)
+
+Time: 0.551 ms
+CREATE TABLE
+Time: 1.580 ms
+ fn_configurar_auditoria 
+-------------------------
+                       3
+(1 row)
+
+Time: 1.488 ms
+       tabla        |  accion  |                detalle                 
+--------------------+----------+----------------------------------------
+ aa_prueba_obsoleta | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id"]
+(1 row)
+
+Time: 2.179 ms
+ALTER TABLE
+Time: 0.224 ms
+psql:sql/09_pruebas_triggers.sql:282: NOTICE:  OK: configuracion obsoleta rechazada
+DO
+Time: 1.954 ms
+psql:sql/09_pruebas_triggers.sql:285: NOTICE:  OK: Generacion fallida conserva triggers anteriores
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.313 ms
+ fn_deshabilitar_tabla 
+-----------------------
+ 
+(1 row)
+
+Time: 0.558 ms
+       tabla        |  accion  |                  detalle                  
+--------------------+----------+-------------------------------------------
+ aa_prueba_obsoleta | RETIRADO | Sin eventos activos; historial conservado
+(1 row)
+
+Time: 1.365 ms
+DROP TABLE
+Time: 0.673 ms
+       tabla        |  accion   |              detalle              
+--------------------+-----------+-----------------------------------
+ aa_prueba_obsoleta | SIN_TABLA | Configuracion inactiva conservada
+(1 row)
+
+Time: 0.879 ms
+CREATE TABLE
+Time: 1.613 ms
+ fn_configurar_auditoria 
+-------------------------
+                       3
+(1 row)
+
+Time: 1.647 ms
+      tabla      |  accion  |                detalle                 
+-----------------+----------+----------------------------------------
+ aa_prueba_error | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id"]
+(1 row)
+
+Time: 2.174 ms
+CREATE FUNCTION
+Time: 0.242 ms
+CREATE TRIGGER
+Time: 0.149 ms
+psql:sql/09_pruebas_triggers.sql:305: NOTICE:  OK: error propagado
+DO
+Time: 2.606 ms
+DROP TRIGGER
+Time: 0.208 ms
+psql:sql/09_pruebas_triggers.sql:308: NOTICE:  OK: Error de bitacora revierte INSERT origen
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 0.184 ms
+CREATE TABLE
+Time: 1.060 ms
+CREATE TABLE
+Time: 0.988 ms
+ fn_configurar_auditoria 
+-------------------------
+                       1
+(1 row)
+
+Time: 1.632 ms
+psql:sql/09_pruebas_triggers.sql:333: NOTICE:  OK: Rendimiento: cantidad correcta para 100 filas
+psql:sql/09_pruebas_triggers.sql:333: NOTICE:  OK: Rendimiento: cantidad correcta para 1000 filas
+psql:sql/09_pruebas_triggers.sql:333: NOTICE:  OK: Rendimiento: cantidad correcta para 5000 filas
+DO
+Time: 1622.887 ms (00:01.623)
+ filas | sin_auditoria_ms | con_auditoria_ms 
+-------+------------------+------------------
+   100 |         0.543000 |        35.290000
+  1000 |         6.034000 |       298.388000
+  5000 |        16.779000 |      1235.415000
+(3 rows)
+
+Time: 0.189 ms
+SAVEPOINT
+Time: 0.068 ms
+INSERT 0 1
+Time: 1.077 ms
+ROLLBACK
+Time: 0.121 ms
+psql:sql/09_pruebas_triggers.sql:342: NOTICE:  OK: ROLLBACK revierte tambien la bitacora
+ aa_comprobar 
+--------------
+ 
+(1 row)
+
+Time: 1.132 ms
+                               resultado                               
+-----------------------------------------------------------------------
+ TODAS LAS COMPROBACIONES TERMINARON; se revierten los datos de prueba
+(1 row)
+
+Time: 0.093 ms
+ROLLBACK
+Time: 2.825 ms
+Timing is off.
+-- exit=0

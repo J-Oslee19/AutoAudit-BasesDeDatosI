@@ -1,0 +1,4 @@
+OK: 15 registros en CSV
+OK: 15 registros en JSON
+OK: identificadores y orden coinciden
+VALIDACION CSV/JSON FINALIZADA CORRECTAMENTE

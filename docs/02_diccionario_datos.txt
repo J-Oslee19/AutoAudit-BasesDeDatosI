@@ -1,0 +1,195 @@
+DICCIONARIO DE DATOS
+PROYECTO: AUTOAUDIT
+BASE DE DATOS: autoaudit
+GESTOR: PostgreSQL 18
+
+DESCRIPCION GENERAL:
+AutoAudit es un sistema de auditoria automatizada
+que permite configurar y registrar operaciones
+INSERT, UPDATE y DELETE en una base de datos.
+
+========================================
+TABLA 1: tabla_auditada
+========================================
+
+DESCRIPCION:
+Almacena la informacion de las tablas que
+pueden ser seleccionadas para auditoria.
+
+CAMPO: id_tabla
+TIPO: INTEGER
+RESTRICCION: PRIMARY KEY, IDENTITY, NOT NULL
+DESCRIPCION: Identificador unico de la tabla.
+
+CAMPO: nombre_tabla
+TIPO: VARCHAR(100)
+RESTRICCION: NOT NULL
+DESCRIPCION: Nombre de la tabla a auditar.
+
+CAMPO: estado
+TIPO: BOOLEAN
+RESTRICCION: NOT NULL, DEFAULT TRUE
+DESCRIPCION: Indica si la tabla esta habilitada
+para auditoria.
+
+========================================
+TABLA 2: columna_auditada
+========================================
+
+DESCRIPCION:
+Almacena las columnas pertenecientes a las
+tablas seleccionadas para auditoria.
+
+CAMPO: id_columna
+TIPO: INTEGER
+RESTRICCION: PRIMARY KEY, IDENTITY, NOT NULL
+DESCRIPCION: Identificador unico de la columna.
+
+CAMPO: nombre_columna
+TIPO: VARCHAR(100)
+RESTRICCION: NOT NULL
+DESCRIPCION: Nombre de la columna a auditar.
+
+CAMPO: id_tabla
+TIPO: INTEGER
+RESTRICCION: FOREIGN KEY, NOT NULL
+REFERENCIA: tabla_auditada(id_tabla)
+DESCRIPCION: Identifica la tabla a la que
+pertenece la columna.
+========================================
+TABLA 3: evento_auditoria
+========================================
+
+DESCRIPCION:
+Almacena los tipos de operaciones que
+pueden ser auditadas: INSERT, UPDATE y DELETE.
+
+CAMPO: id_evento
+TIPO: INTEGER
+RESTRICCION: PRIMARY KEY, IDENTITY, NOT NULL
+DESCRIPCION: Identificador unico del evento.
+
+CAMPO: tipo_evento
+TIPO: VARCHAR(20)
+RESTRICCION: NOT NULL
+DESCRIPCION: Tipo de operacion de auditoria.
+
+========================================
+TABLA 4: configuracion_auditoria
+========================================
+
+DESCRIPCION:
+Almacena la configuracion de auditoria
+para cada columna y tipo de evento.
+
+CAMPO: id_configuracion
+TIPO: INTEGER
+RESTRICCION: PRIMARY KEY, IDENTITY, NOT NULL
+DESCRIPCION: Identificador de la configuracion.
+
+CAMPO: id_columna
+TIPO: INTEGER
+RESTRICCION: FOREIGN KEY, NOT NULL
+REFERENCIA: columna_auditada(id_columna)
+DESCRIPCION: Columna seleccionada para auditoria.
+
+CAMPO: id_evento
+TIPO: INTEGER
+RESTRICCION: FOREIGN KEY, NOT NULL
+REFERENCIA: evento_auditoria(id_evento)
+DESCRIPCION: Tipo de operacion que se auditara.
+
+CAMPO: activo
+TIPO: BOOLEAN
+RESTRICCION: NOT NULL, DEFAULT TRUE
+DESCRIPCION: Indica si la configuracion
+de auditoria esta habilitada.
+========================================
+TABLA 5: usuario_auditado
+========================================
+
+DESCRIPCION:
+Almacena la informacion de los usuarios
+que realizan operaciones en la base de datos.
+
+CAMPO: id_usuario
+TIPO: INTEGER
+RESTRICCION: PRIMARY KEY, IDENTITY, NOT NULL
+DESCRIPCION: Identificador unico del usuario.
+
+CAMPO: nombre_usuario
+TIPO: VARCHAR(100)
+RESTRICCION: NOT NULL
+DESCRIPCION: Nombre del usuario auditado.
+
+========================================
+TABLA 6: estacion_trabajo
+========================================
+
+DESCRIPCION:
+Almacena la informacion de las estaciones
+desde donde se realizan las operaciones.
+
+CAMPO: id_estacion
+TIPO: INTEGER
+RESTRICCION: PRIMARY KEY, IDENTITY, NOT NULL
+DESCRIPCION: Identificador unico de la estacion.
+
+CAMPO: nombre_estacion
+TIPO: VARCHAR(100)
+RESTRICCION: NOT NULL
+DESCRIPCION: Nombre de la estacion de trabajo.
+
+CAMPO: direccion_ip
+TIPO: VARCHAR(45)
+RESTRICCION: PERMITE NULL
+DESCRIPCION: Direccion IP de la estacion.
+
+========================================
+TABLA 7: bitacora
+========================================
+
+DESCRIPCION:
+Almacena el historial de cambios realizados
+en las tablas auditadas.
+
+CAMPO: id_bitacora
+TIPO: INTEGER
+RESTRICCION: PRIMARY KEY, IDENTITY, NOT NULL
+DESCRIPCION: Identificador unico del registro.
+
+CAMPO: id_configuracion
+TIPO: INTEGER
+RESTRICCION: FOREIGN KEY, NOT NULL
+REFERENCIA: configuracion_auditoria(id_configuracion)
+DESCRIPCION: Configuracion que origino el registro.
+
+CAMPO: id_usuario
+TIPO: INTEGER
+RESTRICCION: FOREIGN KEY, NOT NULL
+REFERENCIA: usuario_auditado(id_usuario)
+DESCRIPCION: Usuario que realizo la operacion.
+
+CAMPO: id_estacion
+TIPO: INTEGER
+RESTRICCION: FOREIGN KEY, NOT NULL
+REFERENCIA: estacion_trabajo(id_estacion)
+DESCRIPCION: Estacion desde donde se realizo
+la operacion.
+
+CAMPO: valor_anterior
+TIPO: TEXT
+RESTRICCION: PERMITE NULL
+DESCRIPCION: Valor antes de la operacion.
+
+CAMPO: valor_nuevo
+TIPO: TEXT
+RESTRICCION: PERMITE NULL
+DESCRIPCION: Valor despues de la operacion.
+
+CAMPO: fecha_hora
+TIPO: TIMESTAMP
+RESTRICCION: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+DESCRIPCION: Fecha y hora del registro.
+
+id_registro | TEXT | Identificador del registro afectado por la operación de auditoría.

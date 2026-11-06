@@ -1,0 +1,26 @@
+# Exportaciones generadas durante las pruebas locales
+/evidencias/exportaciones_finales/
+
+# Archivos de entorno y credenciales
+.env
+.env.*
+.pgpass
+*.key
+*.pem
+*.p12
+
+# Archivos temporales
+*.tmp
+*.log
+__pycache__/
+*.pyc
+
+# Copias comprimidas
+*.zip
+
+# Reportes de demostración generados
+/evidencias/reportes_ejemplo/
+
+# Copias completas de la bitácora local
+/evidencias/bitacora_antes_reinstalacion.txt
+/evidencias/bitacora_despues_reinstalacion.txt

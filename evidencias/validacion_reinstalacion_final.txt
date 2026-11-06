@@ -1,0 +1,6 @@
+AUTOAUDIT - VERIFICACIÓN DE REINSTALACIÓN
+Base: autoaudit_demo_final
+Servidor: PostgreSQL 18.6
+
+OK: El historial es idéntico antes y después de reinstalar
+Registros conservados: 15

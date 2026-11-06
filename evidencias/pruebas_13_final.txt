@@ -1,0 +1,353 @@
+BEGIN
+SET
+SET
+DO
+CREATE FUNCTION
+CREATE TABLE
+CREATE ROLE
+CREATE ROLE
+CREATE ROLE
+CREATE ROLE
+CREATE ROLE
+GRANT ROLE
+GRANT ROLE
+GRANT
+GRANT
+--- Configuración: precio y existencia en INSERT/UPDATE/DELETE; nombre solo en INSERT/DELETE ---
+SET
+ fn_configurar_auditoria 
+-------------------------
+                       6
+
+ fn_configurar_auditoria 
+-------------------------
+                       2
+
+  tabla   |  accion  |                     detalle                     
+----------+----------+-------------------------------------------------
+ producto | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id_producto"]
+
+RESET
+psql:sql/13_pruebas_validacion.sql:84: NOTICE:  OK: Estado: 3 columnas activas, tabla habilitada y trigger instalado
+ ok 
+----
+ 
+
+--- A. INSERT ---
+SET
+INSERT 0 1
+INSERT 0 1
+RESET
+psql:sql/13_pruebas_validacion.sql:96: NOTICE:  OK: A1. Dos INSERT x 3 columnas configuradas = 6 registros (descripcion no se audita)
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:98: NOTICE:  OK: A2. La columna no seleccionada no aparece en bitácora
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:105: NOTICE:  OK: A3. INSERT: anterior NULL, nuevo correcto, PK, usuario, fecha y estación
+ ok 
+----
+ 
+
+--- B. UPDATE ---
+SET
+UPDATE 1
+UPDATE 1
+UPDATE 1
+UPDATE 1
+RESET
+psql:sql/13_pruebas_validacion.sql:119: NOTICE:  OK: B1. Solo 2 UPDATE reales registrados (sin cambio y columna sin UPDATE se ignoran)
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:123: NOTICE:  OK: B2. UPDATE precio: anterior 150.00 y nuevo 165.00 por aa_val_luis
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:127: NOTICE:  OK: B3. UPDATE existencia: 20 -> 15
+ ok 
+----
+ 
+
+--- C. DELETE ---
+SET
+DELETE 1
+RESET
+psql:sql/13_pruebas_validacion.sql:138: NOTICE:  OK: C1. El registro fuente fue eliminado
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:142: NOTICE:  OK: C2. DELETE guarda los 3 valores anteriores y nuevo NULL
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:145: NOTICE:  OK: C3. Los datos originales se preservan aunque la fila ya no exista
+ ok 
+----
+ 
+
+--- D. Consultas ---
+Historial del usuario aa_val_luis:
+ id_bitacora | nombre_tabla | nombre_columna | tipo_evento | valor_anterior | valor_nuevo |    id_registro     
+-------------+--------------+----------------+-------------+----------------+-------------+--------------------
+        6128 | producto     | precio         | UPDATE      | 150.00         | 165.00      | {"id_producto": 1}
+        6129 | producto     | existencia     | UPDATE      | 20             | 15          | {"id_producto": 1}
+
+psql:sql/13_pruebas_validacion.sql:155: NOTICE:  OK: D1. Por usuario: aa_val_luis tiene exactamente sus 2 cambios
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:157: NOTICE:  OK: D2. Por usuario: aa_val_ana tiene sus 9 cambios (6 INSERT + 3 DELETE)
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:159: NOTICE:  OK: D3. Por usuario: no mezcla cambios de otros usuarios
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:161: NOTICE:  El usuario "nadie" no tiene cambios registrados en la bitácora.
+psql:sql/13_pruebas_validacion.sql:161: NOTICE:  OK: D4. Usuario sin cambios devuelve vacío (con aviso), no error
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:163: NOTICE:  OK: D5. Filtro por tabla en historial de usuario
+ ok 
+----
+ 
+
+Historial de la columna producto.precio:
+ id_bitacora | tipo_evento | valor_anterior | valor_nuevo | nombre_usuario |    id_registro     
+-------------+-------------+----------------+-------------+----------------+--------------------
+        6123 | INSERT      |                | 150.00      | aa_val_ana     | {"id_producto": 1}
+        6126 | INSERT      |                | 75.50       | aa_val_ana     | {"id_producto": 2}
+        6128 | UPDATE      | 150.00         | 165.00      | aa_val_luis    | {"id_producto": 1}
+        6131 | DELETE      | 75.50          |             | aa_val_ana     | {"id_producto": 2}
+
+psql:sql/13_pruebas_validacion.sql:169: NOTICE:  OK: D6. Por columna: precio tiene 2 INSERT + 1 UPDATE + 1 DELETE
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:171: NOTICE:  OK: D7. Por columna con filtro de evento (sin importar mayúsculas)
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:174: NOTICE:  OK: D8. Resultado en orden cronológico
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:176: NOTICE:  OK: D9. Por registro: producto 1 tiene 3 INSERT + 2 UPDATE
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:179: NOTICE:  OK: D10. Línea de tiempo: los 3 últimos cambios son el DELETE
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:184: NOTICE:  OK: D10b. Línea de tiempo con filtros de tabla, evento y usuario
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:186: NOTICE:  OK: D11. Rango de fechas futuro devuelve vacío
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:203: NOTICE:  OK: D12. Columna nunca configurada -> error claro
+psql:sql/13_pruebas_validacion.sql:203: NOTICE:  OK: D13. Rango invertido -> error
+psql:sql/13_pruebas_validacion.sql:203: NOTICE:  OK: D14. Evento inválido -> error
+psql:sql/13_pruebas_validacion.sql:203: NOTICE:  OK: D15. Usuario vacío -> error
+DO
+SET
+ fn_deshabilitar_tabla 
+-----------------------
+ 
+
+  tabla   |  accion  |                  detalle                  
+----------+----------+-------------------------------------------
+ producto | RETIRADO | Sin eventos activos; historial conservado
+
+RESET
+psql:sql/13_pruebas_validacion.sql:212: NOTICE:  OK: D16. Tabla deshabilitada: el historial sigue consultable
+ ok 
+----
+ 
+
+SET
+ fn_configurar_auditoria 
+-------------------------
+                       6
+
+ fn_configurar_auditoria 
+-------------------------
+                       2
+
+  tabla   |  accion  |                     detalle                     
+----------+----------+-------------------------------------------------
+ producto | GENERADO | DELETE OR INSERT OR UPDATE; PK: ["id_producto"]
+
+RESET
+--- E. Reportes ---
+ nombre_usuario | total_cambios | inserciones | actualizaciones | eliminaciones | tablas_afectadas |       primer_cambio        |       ultimo_cambio        
+----------------+---------------+-------------+-----------------+---------------+------------------+----------------------------+----------------------------
+ aa_val_ana     |             9 |           6 |               0 |             3 |                1 | 2026-11-06 16:24:09.326443 | 2026-11-06 16:24:09.362025
+ aa_val_luis    |             2 |           0 |               2 |             0 |                1 | 2026-11-06 16:24:09.345288 | 2026-11-06 16:24:09.346881
+
+ nombre_tabla | nombre_columna | total_cambios | inserciones | actualizaciones | eliminaciones | usuarios_distintos |       ultimo_cambio        | ultimo_usuario 
+--------------+----------------+---------------+-------------+-----------------+---------------+--------------------+----------------------------+----------------
+ producto     | existencia     |             4 |           2 |               1 |             1 |                  2 | 2026-11-06 16:24:09.361763 | aa_val_ana
+ producto     | nombre         |             3 |           2 |               0 |             1 |                  1 | 2026-11-06 16:24:09.362025 | aa_val_ana
+ producto     | precio         |             4 |           2 |               1 |             1 |                  2 | 2026-11-06 16:24:09.361899 | aa_val_ana
+
+ nombre_tabla | tabla_habilitada | tabla_existe | columnas_activas |    eventos_activos     | trigger_instalado | registros_bitacora 
+--------------+------------------+--------------+------------------+------------------------+-------------------+--------------------
+ producto     | t                | t            |                3 | DELETE, INSERT, UPDATE | t                 |                 11
+
+psql:sql/13_pruebas_validacion.sql:228: NOTICE:  OK: E1. Resumen por usuario cuadra con el historial
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:231: NOTICE:  OK: E2. Resumen por columna suma el total de la bitácora
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:234: NOTICE:  OK: E3. Último usuario que cambió precio (el DELETE de ana)
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:236: NOTICE:  OK: E4. Actividad diaria suma los 11 cambios
+ ok 
+----
+ 
+
+--- F. Seguridad ---
+SET
+psql:sql/13_pruebas_validacion.sql:244: NOTICE:  OK: F1. El auditor (autoaudit_consulta) puede consultar el historial
+ ok 
+----
+ 
+
+psql:sql/13_pruebas_validacion.sql:253: NOTICE:  OK: F2. El auditor no puede escribir en bitácora
+psql:sql/13_pruebas_validacion.sql:253: NOTICE:  OK: F3. El auditor no puede configurar auditoría
+DO
+RESET
+SET
+psql:sql/13_pruebas_validacion.sql:264: NOTICE:  OK: F4. Usuario sin rol no puede consultar
+psql:sql/13_pruebas_validacion.sql:264: NOTICE:  OK: F5. Usuario sin rol no puede leer la vista
+DO
+RESET
+SET
+psql:sql/13_pruebas_validacion.sql:268: NOTICE:  OK: F6. El administrador también puede consultar (hereda autoaudit_consulta)
+ ok 
+----
+ 
+
+RESET
+--- G. Rendimiento (puede tardar unos segundos) ---
+CREATE TABLE
+SET
+ fn_configurar_auditoria 
+-------------------------
+                       3
+
+RESET
+CREATE TABLE
+CREATE TABLE
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G1. INSERT de 1000 filas genera exactamente 1000 registros
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G1. UPDATE de 1000 filas genera exactamente 1000 registros
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G1. DELETE de 1000 filas genera exactamente 1000 registros
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G2. Con 3011 registros en bitácora la consulta por usuario sigue exacta
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G1. INSERT de 10000 filas genera exactamente 10000 registros
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G1. UPDATE de 10000 filas genera exactamente 10000 registros
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G1. DELETE de 10000 filas genera exactamente 10000 registros
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G2. Con 33011 registros en bitácora la consulta por usuario sigue exacta
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G1. INSERT de 50000 filas genera exactamente 50000 registros
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G1. UPDATE de 50000 filas genera exactamente 50000 registros
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G1. DELETE de 50000 filas genera exactamente 50000 registros
+psql:sql/13_pruebas_validacion.sql:349: NOTICE:  OK: G2. Con 183011 registros en bitácora la consulta por usuario sigue exacta
+DO
+G1. Tiempo de operaciones (ms): sin auditoría vs. con auditoría de 1 columna
+ filas | operacion | sin_auditoria_ms | con_auditoria_ms | veces | ms_extra_por_fila | registros_bitacora 
+-------+-----------+------------------+------------------+-------+-------------------+--------------------
+  1000 | INSERT    |              5.2 |            168.1 |  32.3 |            0.1629 |               1011
+  1000 | UPDATE    |              7.0 |            237.0 |  33.9 |            0.2300 |               2011
+  1000 | DELETE    |              1.0 |            170.2 | 170.2 |            0.1692 |               3011
+ 10000 | INSERT    |             48.5 |           2223.0 |  45.8 |            0.2175 |              13011
+ 10000 | UPDATE    |             43.8 |           2287.2 |  52.2 |            0.2243 |              23011
+ 10000 | DELETE    |              3.9 |           1990.6 | 510.4 |            0.1987 |              33011
+ 50000 | INSERT    |            110.2 |          20748.6 | 188.3 |            0.4128 |              83011
+ 50000 | UPDATE    |            902.2 |          10601.4 |  11.8 |            0.1940 |             133011
+ 50000 | DELETE    |             19.0 |           7957.0 | 418.8 |            0.1588 |             183011
+
+G2. Tiempo de consultas (ms) según el tamaño de la bitácora
+ filas_bitacora |                     consulta                     | filas_devueltas | tiempo_ms 
+----------------+--------------------------------------------------+-----------------+-----------
+           3011 | fn_historial_columna (producto.precio)           |               4 |      2.50
+           3011 | fn_historial_usuario (usuario con pocos cambios) |               2 |      8.26
+           3011 | fn_linea_tiempo (últimos 100)                    |             100 |      5.32
+           3011 | fn_reporte_por_usuario (resumen completo)        |               3 |      6.37
+          33011 | fn_historial_columna (producto.precio)           |               4 |      1.45
+          33011 | fn_historial_usuario (usuario con pocos cambios) |               2 |      1.20
+          33011 | fn_linea_tiempo (últimos 100)                    |             100 |      2.05
+          33011 | fn_reporte_por_usuario (resumen completo)        |               3 |     32.44
+         183011 | fn_historial_columna (producto.precio)           |               4 |      1.48
+         183011 | fn_historial_usuario (usuario con pocos cambios) |               2 |      1.09
+         183011 | fn_linea_tiempo (últimos 100)                    |             100 |      2.44
+         183011 | fn_reporte_por_usuario (resumen completo)        |               3 |    215.25
+
+Plan de la consulta por usuario con la bitácora más grande (debe usar índice):
+                                                       QUERY PLAN                                                       
+------------------------------------------------------------------------------------------------------------------------
+ Nested Loop
+   ->  Nested Loop
+         ->  Nested Loop
+               ->  Nested Loop
+                     ->  Nested Loop
+                           ->  Nested Loop
+                                 ->  Index Scan using ix_bitacora_usuario_fecha on bitacora b
+                                       Index Cond: (id_usuario = 4)
+                                 ->  Memoize
+                                       Cache Key: b.id_configuracion
+                                       Cache Mode: logical
+                                       ->  Index Scan using configuracion_auditoria_pkey on configuracion_auditoria cfg
+                                             Index Cond: (id_configuracion = b.id_configuracion)
+                           ->  Index Scan using columna_auditada_pkey on columna_auditada ca
+                                 Index Cond: (id_columna = cfg.id_columna)
+                     ->  Index Scan using tabla_auditada_pkey on tabla_auditada t
+                           Index Cond: (id_tabla = ca.id_tabla)
+               ->  Index Scan using evento_auditoria_pkey on evento_auditoria ev
+                     Index Cond: (id_evento = cfg.id_evento)
+         ->  Materialize
+               ->  Index Scan using usuario_auditado_pkey on usuario_auditado u
+                     Index Cond: (id_usuario = 4)
+   ->  Memoize
+         Cache Key: b.id_estacion
+         Cache Mode: logical
+         ->  Index Scan using estacion_trabajo_pkey on estacion_trabajo e
+               Index Cond: (id_estacion = b.id_estacion)
+
+                                  resultado                                   
+------------------------------------------------------------------------------
+ TODAS LAS PRUEBAS DE VALIDACIÓN TERMINARON; se revierten los datos de prueba
+
+ROLLBACK

@@ -1,0 +1,122 @@
+NOTICE:  table "empleado" does not exist, skipping
+DROP TABLE
+CREATE TABLE
+--- P1: tablas disponibles (no aparecen las del sistema) ---
+ nombre_tabla | num_columnas | auditada | registrada 
+--------------+--------------+----------+------------
+ empleado     |            4 | f        | f
+(1 row)
+
+--- P2: columnas de empleado (diccionario de datos) ---
+ orden | nombre_columna |       tipo_dato        | permite_nulos | es_pk | audita_insert | audita_update | audita_delete 
+-------+----------------+------------------------+---------------+-------+---------------+---------------+---------------
+     1 | id_empleado    | integer                | f             | t     | f             | f             | f
+     2 | nombre         | character varying(100) | f             | f     | f             | f             | f
+     3 | salario        | numeric(10,2)          | t             | f     | f             | f             | f
+     4 | puesto         | character varying(50)  | t             | f     | f             | f             | f
+(4 rows)
+
+--- P3: configurar salario y puesto, solo UPDATE y DELETE (esperado: 4) ---
+ fn_configurar_auditoria 
+-------------------------
+                       4
+(1 row)
+
+ nombre_tabla | tabla_habilitada | nombre_columna | tipo_evento | activo | id_configuracion 
+--------------+------------------+----------------+-------------+--------+------------------
+ empleado     | t                | puesto         | DELETE      | t      |                1
+ empleado     | t                | puesto         | UPDATE      | t      |                2
+ empleado     | t                | salario        | DELETE      | t      |                3
+ empleado     | t                | salario        | UPDATE      | t      |                4
+(4 rows)
+
+--- P4: repetir la misma configuración no duplica filas (esperado: 4 filas) ---
+ fn_configurar_auditoria 
+-------------------------
+                       4
+(1 row)
+
+ filas_config 
+--------------
+            4
+(1 row)
+
+--- P5: desactivar UPDATE de salario ---
+ fn_cambiar_estado_evento 
+--------------------------
+ 
+(1 row)
+
+ orden | nombre_columna |       tipo_dato       | permite_nulos | es_pk | audita_insert | audita_update | audita_delete 
+-------+----------------+-----------------------+---------------+-------+---------------+---------------+---------------
+     3 | salario        | numeric(10,2)         | t             | f     | f             | f             | t
+     4 | puesto         | character varying(50) | t             | f     | f             | t             | t
+(2 rows)
+
+--- P6: reactivar INSERT de nombre (crea la config si no existía) ---
+ fn_cambiar_estado_evento 
+--------------------------
+ 
+(1 row)
+
+--- N1: tabla inexistente (esperado: ERROR 42P01) ---
+ERROR:  La tabla "no_existe" no existe en el esquema public.
+CONTEXT:  PL/pgSQL function fn_seleccionar_tabla(text) line 15 at RAISE
+SQL statement "SELECT public.fn_seleccionar_tabla(p_tabla)"
+PL/pgSQL function fn_configurar_auditoria(text,text[],text[]) line 12 at PERFORM
+--- N2: columna inexistente (esperado: ERROR 42703 y NO se guarda nada) ---
+ERROR:  La columna "fantasma" no existe en la tabla "empleado".
+CONTEXT:  PL/pgSQL function fn_configurar_auditoria(text,text[],text[]) line 44 at RAISE
+ config_insert_puesto 
+----------------------
+                    0
+(1 row)
+
+--- N3: evento inválido (esperado: ERROR 22023) ---
+ERROR:  Evento "TRUNCATE" no válido. Use INSERT, UPDATE o DELETE.
+CONTEXT:  PL/pgSQL function fn_configurar_auditoria(text,text[],text[]) line 36 at RAISE
+--- N4: tabla del sistema (esperado: ERROR 42809) ---
+ERROR:  La tabla "bitacora" pertenece al sistema AutoAudit y no puede auditarse.
+CONTEXT:  PL/pgSQL function fn_seleccionar_tabla(text) line 11 at RAISE
+--- N5: usuario sin privilegios (esperado: ERROR 42501) ---
+DO
+GRANT
+SET
+ERROR:  Acceso denegado: el usuario "usuario_normal" no tiene privilegios para configurar la auditoría.
+CONTEXT:  PL/pgSQL function fn_exigir_admin() line 4 at RAISE
+SQL statement "SELECT public.fn_exigir_admin()"
+PL/pgSQL function fn_configurar_auditoria(text,text[],text[]) line 11 at PERFORM
+RESET
+REVOKE
+--- N6: escritura directa en tablas de configuración (esperado: permission denied) ---
+SET
+ERROR:  permission denied for table tabla_auditada
+RESET
+--- P7: deshabilitar tabla completa y verificar ---
+ fn_deshabilitar_tabla 
+-----------------------
+ 
+(1 row)
+
+ nombre_tabla | num_columnas | auditada | registrada 
+--------------+--------------+----------+------------
+ empleado     |            4 | f        | t
+(1 row)
+
+ activas 
+---------
+       0
+(1 row)
+
+--- P8: detectar columna eliminada tras reconfigurar ---
+ fn_configurar_auditoria 
+-------------------------
+                       1
+(1 row)
+
+ALTER TABLE
+ nombre_tabla | nombre_columna |        problema         
+--------------+----------------+-------------------------
+ empleado     | puesto         | La columna ya no existe
+(1 row)
+
